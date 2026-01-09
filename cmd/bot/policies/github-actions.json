@@ -1,0 +1,7 @@
+[
+  {
+    "name": "dockerfile",
+    "match_file": "**/Dockerfile*",
+    "source": "https://raw.githubusercontent.com/tracker-tv/github-actions-ttv/refs/heads/main/workflows/dockerfile.yml"
+  }
+]
