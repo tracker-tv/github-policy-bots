@@ -3,7 +3,7 @@ package policy
 import (
 	"encoding/json"
 
-	"github.com/tracker-tv/github-ttv-policy/models"
+	"github.com/tracker-tv/github-policy-bots/models"
 )
 
 func FromJSON(data []byte) ([]models.Workflow, error) {

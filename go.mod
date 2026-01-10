@@ -1,4 +1,4 @@
-module github.com/tracker-tv/github-ttv-policy
+module github.com/tracker-tv/github-policy-bots
 
 go 1.25.4
 

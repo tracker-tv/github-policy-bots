@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/tracker-tv/github-ttv-policy/internal/config"
-	"github.com/tracker-tv/github-ttv-policy/internal/github"
-	"github.com/tracker-tv/github-ttv-policy/internal/policy"
+	"github.com/tracker-tv/github-policy-bots/internal/config"
+	"github.com/tracker-tv/github-policy-bots/internal/github"
+	"github.com/tracker-tv/github-policy-bots/internal/policy"
 )
 
 //go:embed policies/*.json
