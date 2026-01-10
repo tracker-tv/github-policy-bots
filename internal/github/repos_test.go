@@ -9,7 +9,7 @@ import (
 	gh "github.com/google/go-github/v80/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	github "github.com/tracker-tv/github-ttv-policy/internal/github/mocks"
+	github "github.com/tracker-tv/github-policy-bots/internal/github/mocks"
 )
 
 func TestListAllRepos_PaginationAndRetry(t *testing.T) {
