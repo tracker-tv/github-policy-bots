@@ -13,6 +13,7 @@ require-template-schema-exists: true
 template: testify
 template-schema: '{{.Template}}.schema.json'
 packages:
-  github.com/tracker-tv/github-ttv-policy/internal/github:
+  github.com/tracker-tv/github-policy-bots/internal/github:
     interfaces:
-      RepositoriesService:
+      ClientInterface:
+      RepositoriesAdapter:

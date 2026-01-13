@@ -15,11 +15,11 @@ import (
 func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 	ctx := context.Background()
 
-	reposSvc := github.NewMockRepositoriesService(t)
+	reposSvc := github.NewMockRepositoriesAdapter(t)
 
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv", mock.Anything).
+		ListByOrg(mock.Anything, "org-name", mock.Anything).
 		Once().
 		Return(nil, nil, &gh.RateLimitError{
 			Rate: gh.Rate{
@@ -30,7 +30,7 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 	// Page 1
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv",
+		ListByOrg(mock.Anything, "org-name",
 			mock.MatchedBy(func(o *gh.RepositoryListByOrgOptions) bool {
 				return o.Page == 0
 			}),
@@ -48,7 +48,7 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 	// Page 2
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv",
+		ListByOrg(mock.Anything, "org-name",
 			mock.MatchedBy(func(o *gh.RepositoryListByOrgOptions) bool {
 				return o.Page == 2
 			}),
@@ -62,7 +62,7 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 			nil,
 		)
 
-	client := &Client{repositories: reposSvc}
+	client := &client{repositories: reposSvc, org: "org-name"}
 
 	repos, err := client.ListAllRepos(ctx)
 
@@ -78,11 +78,11 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 func TestListAllRepos_RateLimitRetry(t *testing.T) {
 	ctx := context.Background()
 
-	reposSvc := github.NewMockRepositoriesService(t)
+	reposSvc := github.NewMockRepositoriesAdapter(t)
 
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv", mock.Anything).
+		ListByOrg(mock.Anything, "org-name", mock.Anything).
 		Once().
 		Return(nil, nil, &gh.RateLimitError{
 			Rate: gh.Rate{
@@ -92,7 +92,7 @@ func TestListAllRepos_RateLimitRetry(t *testing.T) {
 
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv", mock.Anything).
+		ListByOrg(mock.Anything, "org-name", mock.Anything).
 		Once().
 		Return(
 			[]*gh.Repository{
@@ -102,7 +102,7 @@ func TestListAllRepos_RateLimitRetry(t *testing.T) {
 			nil,
 		)
 
-	client := &Client{repositories: reposSvc}
+	client := &client{repositories: reposSvc, org: "org-name"}
 
 	repos, err := client.ListAllRepos(ctx)
 
@@ -115,11 +115,11 @@ func TestListAllRepos_ContextTimeout(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
 	defer cancel()
 
-	reposSvc := github.NewMockRepositoriesService(t)
+	reposSvc := github.NewMockRepositoriesAdapter(t)
 
 	reposSvc.
 		EXPECT().
-		ListByOrg(mock.Anything, "tracker-tv", mock.Anything).
+		ListByOrg(mock.Anything, "org-name", mock.Anything).
 		Once().
 		Return(nil, nil, &gh.RateLimitError{
 			Rate: gh.Rate{
@@ -129,7 +129,7 @@ func TestListAllRepos_ContextTimeout(t *testing.T) {
 			},
 		})
 
-	client := &Client{repositories: reposSvc}
+	client := &client{repositories: reposSvc, org: "org-name"}
 
 	start := time.Now()
 	repos, err := client.ListAllRepos(ctx)

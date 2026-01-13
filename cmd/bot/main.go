@@ -8,7 +8,9 @@ import (
 
 	"github.com/tracker-tv/github-policy-bots/internal/config"
 	"github.com/tracker-tv/github-policy-bots/internal/github"
+	"github.com/tracker-tv/github-policy-bots/internal/orchestrator"
 	"github.com/tracker-tv/github-policy-bots/internal/policy"
+	"github.com/tracker-tv/github-policy-bots/internal/service"
 )
 
 //go:embed policies/*.json
@@ -19,7 +21,6 @@ func main() {
 	if err != nil {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
-	fmt.Printf("Config: %+v\n", cfg)
 
 	data, err := embeddedPolicies.ReadFile("policies/github-actions.json")
 	if err != nil {
@@ -31,16 +32,19 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	client := github.New(cfg.GithubPAT)
-	repos, err := client.ListAllRepos(context.Background())
-	if err != nil {
-		log.Fatalln(err)
-	}
+	fmt.Printf("Policies: %+v\n", workflows)
 
-	for _, repo := range repos {
-		fmt.Println(repo.GetName())
-		fmt.Printf("%+v\n", repo)
-	}
+	ghClient := github.New(cfg.GithubPAT, "tracker-tv")
 
-	fmt.Printf("%+v\n", workflows)
+	repoSvc := service.NewRepositoriesService(ghClient)
+	workflowSvc := service.NewWorkflowService(ghClient)
+
+	bot := orchestrator.NewGithubActionsBot(
+		repoSvc,
+		workflowSvc,
+	)
+
+	if err := bot.Run(context.Background()); err != nil {
+		log.Fatal(err)
+	}
 }

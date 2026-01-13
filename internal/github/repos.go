@@ -9,16 +9,16 @@ import (
 	gh "github.com/google/go-github/v80/github"
 )
 
-func (c *Client) ListAllRepos(ctx context.Context) ([]*gh.Repository, error) {
+func (c *client) ListAllRepos(ctx context.Context) ([]*gh.Repository, error) {
 	var allRepos []*gh.Repository
+
 	opts := &gh.RepositoryListByOrgOptions{
-		ListOptions: gh.ListOptions{
-			PerPage: 100,
-		},
+		Sort:        "full_name",
+		ListOptions: gh.ListOptions{PerPage: 100},
 	}
 
 	for {
-		repos, resp, err := c.listAllReposWithRetry(ctx, opts)
+		repos, resp, err := c.listReposWithRetry(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
@@ -34,20 +34,18 @@ func (c *Client) ListAllRepos(ctx context.Context) ([]*gh.Repository, error) {
 	return allRepos, nil
 }
 
-func (c *Client) listAllReposWithRetry(ctx context.Context, opts *gh.RepositoryListByOrgOptions) ([]*gh.Repository, *gh.Response, error) {
-	maxRetries := 5
-	baseDelay := 1 * time.Second
+func (c *client) listReposWithRetry(ctx context.Context, opts *gh.RepositoryListByOrgOptions) ([]*gh.Repository, *gh.Response, error) {
+	const maxRetries = 5
+	const baseDelay = time.Second
 
 	for attempt := 0; attempt <= maxRetries; attempt++ {
-		repos, resp, err := c.repositories.ListByOrg(ctx, "tracker-tv", opts)
-
+		repos, resp, err := c.repositories.ListByOrg(ctx, c.org, opts)
 		if err == nil {
 			return repos, resp, nil
 		}
 
-		var rateLimitErr *gh.RateLimitError
-		ok := errors.As(err, &rateLimitErr)
-		if !ok {
+		var rateErr *gh.RateLimitError
+		if !errors.As(err, &rateErr) {
 			return nil, nil, err
 		}
 
@@ -55,17 +53,17 @@ func (c *Client) listAllReposWithRetry(ctx context.Context, opts *gh.RepositoryL
 			return nil, nil, fmt.Errorf("max retries reached: %w", err)
 		}
 
-		waitDuration := rateLimitErr.Rate.Reset.Sub(time.Now())
-		if waitDuration < 0 {
-			waitDuration = baseDelay * time.Duration(1<<attempt)
+		wait := rateErr.Rate.Reset.Sub(time.Now())
+		if wait < 0 {
+			wait = baseDelay * time.Duration(1<<attempt)
 		}
 
 		select {
-		case <-time.After(waitDuration):
+		case <-time.After(wait):
 		case <-ctx.Done():
 			return nil, nil, ctx.Err()
 		}
 	}
 
-	return nil, nil, fmt.Errorf("unexpected retry loop exit")
+	return nil, nil, fmt.Errorf("unreachable")
 }

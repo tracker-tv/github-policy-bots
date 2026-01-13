@@ -7,13 +7,20 @@ import (
 	gh "github.com/google/go-github/v80/github"
 )
 
-type RepositoriesService interface {
-	ListByOrg(ctx context.Context, org string, opts *gh.RepositoryListByOrgOptions) ([]*gh.Repository, *gh.Response, error)
+type Client interface {
+	GetContentsRaw(ctx context.Context, repo, path string) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
+	ListAllRepos(ctx context.Context) ([]*gh.Repository, error)
 }
 
-type Client struct {
+type RepositoriesAdapter interface {
+	ListByOrg(ctx context.Context, org string, opts *gh.RepositoryListByOrgOptions) ([]*gh.Repository, *gh.Response, error)
+	GetContents(ctx context.Context, owner, repo, path string, opts *gh.RepositoryContentGetOptions) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
+}
+
+type client struct {
 	github       *gh.Client
-	repositories RepositoriesService
+	repositories RepositoriesAdapter
+	org          string
 }
 
 type authTransport struct {
@@ -25,7 +32,7 @@ func (t *authTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return http.DefaultTransport.RoundTrip(req)
 }
 
-func New(token string) *Client {
+func New(token, org string) Client {
 	var httpClient *http.Client
 	if token != "" {
 		httpClient = &http.Client{
@@ -34,9 +41,11 @@ func New(token string) *Client {
 			},
 		}
 	}
-	client := gh.NewClient(httpClient)
-	return &Client{
-		github:       client,
-		repositories: client.Repositories,
+	c := gh.NewClient(httpClient)
+
+	return &client{
+		github:       c,
+		repositories: c.Repositories,
+		org:          org,
 	}
 }
