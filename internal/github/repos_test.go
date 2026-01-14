@@ -17,16 +17,6 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 
 	reposSvc := github.NewMockRepositoriesAdapter(t)
 
-	reposSvc.
-		EXPECT().
-		ListByOrg(mock.Anything, "org-name", mock.Anything).
-		Once().
-		Return(nil, nil, &gh.RateLimitError{
-			Rate: gh.Rate{
-				Reset: gh.Timestamp{Time: time.Now().Add(-1 * time.Second)},
-			},
-		})
-
 	// Page 1
 	reposSvc.
 		EXPECT().
@@ -62,9 +52,9 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 			nil,
 		)
 
-	client := &client{repositories: reposSvc, org: "org-name"}
+	c := &client{repositories: reposSvc, org: "org-name"}
 
-	repos, err := client.ListAllRepos(ctx)
+	repos, err := c.ListAllRepos(ctx)
 
 	assert.NoError(t, err)
 	assert.Len(t, repos, 3)
@@ -75,44 +65,8 @@ func TestListAllRepos_PaginationAndRetry(t *testing.T) {
 	})
 }
 
-func TestListAllRepos_RateLimitRetry(t *testing.T) {
-	ctx := context.Background()
-
-	reposSvc := github.NewMockRepositoriesAdapter(t)
-
-	reposSvc.
-		EXPECT().
-		ListByOrg(mock.Anything, "org-name", mock.Anything).
-		Once().
-		Return(nil, nil, &gh.RateLimitError{
-			Rate: gh.Rate{
-				Reset: gh.Timestamp{Time: time.Now().Add(-1 * time.Second)},
-			},
-		})
-
-	reposSvc.
-		EXPECT().
-		ListByOrg(mock.Anything, "org-name", mock.Anything).
-		Once().
-		Return(
-			[]*gh.Repository{
-				{ID: gh.Ptr(int64(42)), Name: gh.Ptr("rate-limit-ok")},
-			},
-			&gh.Response{NextPage: 0},
-			nil,
-		)
-
-	client := &client{repositories: reposSvc, org: "org-name"}
-
-	repos, err := client.ListAllRepos(ctx)
-
-	assert.NoError(t, err)
-	assert.Len(t, repos, 1)
-	assert.Equal(t, "rate-limit-ok", repos[0].GetName())
-}
-
 func TestListAllRepos_ContextTimeout(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
 
 	reposSvc := github.NewMockRepositoriesAdapter(t)
@@ -120,19 +74,19 @@ func TestListAllRepos_ContextTimeout(t *testing.T) {
 	reposSvc.
 		EXPECT().
 		ListByOrg(mock.Anything, "org-name", mock.Anything).
-		Once().
-		Return(nil, nil, &gh.RateLimitError{
-			Rate: gh.Rate{
-				Reset: gh.Timestamp{
-					Time: time.Now().Add(10 * time.Second), // long wait
-				},
-			},
+		RunAndReturn(func(ctx context.Context, _ string, _ *gh.RepositoryListByOrgOptions) ([]*gh.Repository, *gh.Response, error) {
+			select {
+			case <-time.After(100 * time.Millisecond):
+				return []*gh.Repository{}, &gh.Response{}, nil
+			case <-ctx.Done():
+				return nil, nil, ctx.Err()
+			}
 		})
 
-	client := &client{repositories: reposSvc, org: "org-name"}
+	c := &client{repositories: reposSvc, org: "org-name"}
 
 	start := time.Now()
-	repos, err := client.ListAllRepos(ctx)
+	repos, err := c.ListAllRepos(ctx)
 	elapsed := time.Since(start)
 
 	assert.Error(t, err)

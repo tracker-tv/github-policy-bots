@@ -8,8 +8,8 @@ import (
 )
 
 type Client interface {
-	GetContentsRaw(ctx context.Context, repo, path string) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
 	ListAllRepos(ctx context.Context) ([]*gh.Repository, error)
+	GetContentsRaw(ctx context.Context, repo, path string) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
 }
 
 type RepositoriesAdapter interface {
