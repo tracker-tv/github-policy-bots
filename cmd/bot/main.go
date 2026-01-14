@@ -37,14 +37,16 @@ func main() {
 	ghClient := github.New(cfg.GithubPAT, "tracker-tv")
 
 	repoSvc := service.NewRepositoriesService(ghClient)
-	workflowSvc := service.NewWorkflowService(ghClient)
+	policySvc := service.NewPolicyService(workflows, ghClient)
 
-	bot := orchestrator.NewGithubActionsBot(
-		repoSvc,
-		workflowSvc,
-	)
+	bot := orchestrator.NewGithubActionsBot(repoSvc, policySvc)
 
-	if err := bot.Run(context.Background()); err != nil {
+	violations, err := bot.Run(context.Background())
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	for _, v := range violations {
+		fmt.Printf("Violation: %s in %s - action: %s\n", v.Policy.Name, v.Repository.FullName, v.Action)
 	}
 }

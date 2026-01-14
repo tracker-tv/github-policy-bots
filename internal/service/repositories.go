@@ -9,6 +9,7 @@ import (
 
 type RepositoryService interface {
 	ListAll(ctx context.Context) ([]models.Repository, error)
+	ListFiles(ctx context.Context, repoName string) ([]string, error)
 }
 
 type repositoriesService struct {
@@ -41,4 +42,19 @@ func (s *repositoriesService) ListAll(ctx context.Context) ([]models.Repository,
 	}
 
 	return result, nil
+}
+
+func (s *repositoriesService) ListFiles(ctx context.Context, repoName string) ([]string, error) {
+	tree, _, err := s.gh.GetTree(ctx, repoName, "HEAD", true)
+	if err != nil {
+		return nil, err
+	}
+
+	files := make([]string, 0, len(tree.Entries))
+	for _, entry := range tree.Entries {
+		if entry.GetType() == "blob" {
+			files = append(files, entry.GetPath())
+		}
+	}
+	return files, nil
 }
