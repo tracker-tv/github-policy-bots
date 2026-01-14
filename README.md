@@ -1,1 +1,1 @@
-# GitHub TTV Policy
+# GitHub Policy Bots

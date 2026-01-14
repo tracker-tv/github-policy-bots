@@ -15,5 +15,10 @@ template-schema: '{{.Template}}.schema.json'
 packages:
   github.com/tracker-tv/github-policy-bots/internal/github:
     interfaces:
-      ClientInterface:
+      Client:
       RepositoriesAdapter:
+      GitAdapter:
+  github.com/tracker-tv/github-policy-bots/internal/service:
+    interfaces:
+      RepositoryService:
+      PolicyService:

@@ -10,6 +10,7 @@ import (
 type Client interface {
 	ListAllRepos(ctx context.Context) ([]*gh.Repository, error)
 	GetContentsRaw(ctx context.Context, repo, path string) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
+	GetTree(ctx context.Context, repo, sha string, recursive bool) (*gh.Tree, *gh.Response, error)
 }
 
 type RepositoriesAdapter interface {
@@ -17,9 +18,14 @@ type RepositoriesAdapter interface {
 	GetContents(ctx context.Context, owner, repo, path string, opts *gh.RepositoryContentGetOptions) (*gh.RepositoryContent, []*gh.RepositoryContent, *gh.Response, error)
 }
 
+type GitAdapter interface {
+	GetTree(ctx context.Context, owner, repo, sha string, recursive bool) (*gh.Tree, *gh.Response, error)
+}
+
 type client struct {
 	github       *gh.Client
 	repositories RepositoriesAdapter
+	git          GitAdapter
 	org          string
 }
 
@@ -46,6 +52,7 @@ func New(token, org string) Client {
 	return &client{
 		github:       c,
 		repositories: c.Repositories,
+		git:          c.Git,
 		org:          org,
 	}
 }

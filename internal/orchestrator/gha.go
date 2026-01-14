@@ -5,34 +5,45 @@ import (
 	"fmt"
 
 	"github.com/tracker-tv/github-policy-bots/internal/service"
+	"github.com/tracker-tv/github-policy-bots/models"
 )
 
 type GithubActionsBot struct {
-	repos     service.RepositoryService
-	workflows service.WorkflowService
+	repos  service.RepositoryService
+	policy service.PolicyService
 }
 
-func NewGithubActionsBot(repos service.RepositoryService, workflows service.WorkflowService) *GithubActionsBot {
-	return &GithubActionsBot{repos: repos, workflows: workflows}
+func NewGithubActionsBot(repos service.RepositoryService, policy service.PolicyService) *GithubActionsBot {
+	return &GithubActionsBot{repos: repos, policy: policy}
 }
 
-func (b *GithubActionsBot) Run(ctx context.Context) error {
+func (b *GithubActionsBot) Run(ctx context.Context) ([]models.PolicyViolation, error) {
 	repos, err := b.repos.ListAll(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	var allViolations []models.PolicyViolation
+
 	for _, repo := range repos {
-		workflows, err := b.workflows.List(ctx, repo.Name)
-		if err != nil {
+		if repo.Archived {
 			continue
 		}
 
-		for _, wf := range workflows {
-			fmt.Println(wf.Name)
-			fmt.Printf("%+v\n", wf.Content)
+		repoFiles, err := b.repos.ListFiles(ctx, repo.Name)
+		if err != nil {
+			fmt.Printf("warning: could not list files for %s: %v\n", repo.Name, err)
+			continue
 		}
+
+		violations, err := b.policy.Ensure(ctx, repo, repoFiles)
+		if err != nil {
+			fmt.Printf("warning: could not check policies for %s: %v\n", repo.Name, err)
+			continue
+		}
+
+		allViolations = append(allViolations, violations...)
 	}
 
-	return nil
+	return allViolations, nil
 }
