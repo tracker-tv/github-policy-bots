@@ -5,25 +5,25 @@ import (
 	"fmt"
 
 	"github.com/tracker-tv/github-policy-bots/internal/service"
-	"github.com/tracker-tv/github-policy-bots/models"
 )
 
 type GithubActionsBot struct {
-	repos  service.RepositoryService
-	policy service.PolicyService
+	repos       service.RepositoryService
+	policy      service.PolicyService
+	remediation service.RemediationService
 }
 
-func NewGithubActionsBot(repos service.RepositoryService, policy service.PolicyService) *GithubActionsBot {
-	return &GithubActionsBot{repos: repos, policy: policy}
+func NewGithubActionsBot(repos service.RepositoryService, policy service.PolicyService, remediation service.RemediationService) *GithubActionsBot {
+	return &GithubActionsBot{repos: repos, policy: policy, remediation: remediation}
 }
 
-func (b *GithubActionsBot) Run(ctx context.Context) ([]models.PolicyViolation, error) {
+func (b *GithubActionsBot) Run(ctx context.Context) ([]service.RemediationResult, error) {
 	repos, err := b.repos.ListAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var allViolations []models.PolicyViolation
+	var results []service.RemediationResult
 
 	for _, repo := range repos {
 		if repo.Archived {
@@ -36,14 +36,26 @@ func (b *GithubActionsBot) Run(ctx context.Context) ([]models.PolicyViolation, e
 			continue
 		}
 
-		violations, err := b.policy.Ensure(ctx, repo, repoFiles)
+		deviations, err := b.policy.Ensure(ctx, repo, repoFiles)
 		if err != nil {
 			fmt.Printf("warning: could not check policies for %s: %v\n", repo.Name, err)
 			continue
 		}
 
-		allViolations = append(allViolations, violations...)
+		for _, deviation := range deviations {
+			result, err := b.remediation.Remediate(ctx, deviation)
+			if err != nil {
+				fmt.Printf("warning: could not remediate %s in %s: %v\n",
+					deviation.Policy.Name, deviation.Repository.Name, err)
+				results = append(results, service.RemediationResult{
+					Drift: deviation,
+					Error: err,
+				})
+				continue
+			}
+			results = append(results, *result)
+		}
 	}
 
-	return allViolations, nil
+	return results, nil
 }

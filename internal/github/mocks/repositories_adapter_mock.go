@@ -38,6 +38,100 @@ func (_m *MockRepositoriesAdapter) EXPECT() *MockRepositoriesAdapter_Expecter {
 	return &MockRepositoriesAdapter_Expecter{mock: &_m.Mock}
 }
 
+// CreateFile provides a mock function for the type MockRepositoriesAdapter
+func (_mock *MockRepositoriesAdapter) CreateFile(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error) {
+	ret := _mock.Called(ctx, owner, repo, path, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateFile")
+	}
+
+	var r0 *github.RepositoryContentResponse
+	var r1 *github.Response
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error)); ok {
+		return returnFunc(ctx, owner, repo, path, opts)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) *github.RepositoryContentResponse); ok {
+		r0 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.RepositoryContentResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) *github.Response); ok {
+		r1 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*github.Response)
+		}
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) error); ok {
+		r2 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// MockRepositoriesAdapter_CreateFile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateFile'
+type MockRepositoriesAdapter_CreateFile_Call struct {
+	*mock.Call
+}
+
+// CreateFile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - owner string
+//   - repo string
+//   - path string
+//   - opts *github.RepositoryContentFileOptions
+func (_e *MockRepositoriesAdapter_Expecter) CreateFile(ctx interface{}, owner interface{}, repo interface{}, path interface{}, opts interface{}) *MockRepositoriesAdapter_CreateFile_Call {
+	return &MockRepositoriesAdapter_CreateFile_Call{Call: _e.mock.On("CreateFile", ctx, owner, repo, path, opts)}
+}
+
+func (_c *MockRepositoriesAdapter_CreateFile_Call) Run(run func(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions)) *MockRepositoriesAdapter_CreateFile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 *github.RepositoryContentFileOptions
+		if args[4] != nil {
+			arg4 = args[4].(*github.RepositoryContentFileOptions)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepositoriesAdapter_CreateFile_Call) Return(repositoryContentResponse *github.RepositoryContentResponse, response *github.Response, err error) *MockRepositoriesAdapter_CreateFile_Call {
+	_c.Call.Return(repositoryContentResponse, response, err)
+	return _c
+}
+
+func (_c *MockRepositoriesAdapter_CreateFile_Call) RunAndReturn(run func(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error)) *MockRepositoriesAdapter_CreateFile_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetContents provides a mock function for the type MockRepositoriesAdapter
 func (_mock *MockRepositoriesAdapter) GetContents(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentGetOptions) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
 	ret := _mock.Called(ctx, owner, repo, path, opts)
@@ -218,6 +312,100 @@ func (_c *MockRepositoriesAdapter_ListByOrg_Call) Return(repositorys []*github.R
 }
 
 func (_c *MockRepositoriesAdapter_ListByOrg_Call) RunAndReturn(run func(ctx context.Context, org string, opts *github.RepositoryListByOrgOptions) ([]*github.Repository, *github.Response, error)) *MockRepositoriesAdapter_ListByOrg_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateFile provides a mock function for the type MockRepositoriesAdapter
+func (_mock *MockRepositoriesAdapter) UpdateFile(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error) {
+	ret := _mock.Called(ctx, owner, repo, path, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateFile")
+	}
+
+	var r0 *github.RepositoryContentResponse
+	var r1 *github.Response
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error)); ok {
+		return returnFunc(ctx, owner, repo, path, opts)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) *github.RepositoryContentResponse); ok {
+		r0 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.RepositoryContentResponse)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) *github.Response); ok {
+		r1 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		if ret.Get(1) != nil {
+			r1 = ret.Get(1).(*github.Response)
+		}
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, string, string, string, *github.RepositoryContentFileOptions) error); ok {
+		r2 = returnFunc(ctx, owner, repo, path, opts)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// MockRepositoriesAdapter_UpdateFile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateFile'
+type MockRepositoriesAdapter_UpdateFile_Call struct {
+	*mock.Call
+}
+
+// UpdateFile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - owner string
+//   - repo string
+//   - path string
+//   - opts *github.RepositoryContentFileOptions
+func (_e *MockRepositoriesAdapter_Expecter) UpdateFile(ctx interface{}, owner interface{}, repo interface{}, path interface{}, opts interface{}) *MockRepositoriesAdapter_UpdateFile_Call {
+	return &MockRepositoriesAdapter_UpdateFile_Call{Call: _e.mock.On("UpdateFile", ctx, owner, repo, path, opts)}
+}
+
+func (_c *MockRepositoriesAdapter_UpdateFile_Call) Run(run func(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions)) *MockRepositoriesAdapter_UpdateFile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 *github.RepositoryContentFileOptions
+		if args[4] != nil {
+			arg4 = args[4].(*github.RepositoryContentFileOptions)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+		)
+	})
+	return _c
+}
+
+func (_c *MockRepositoriesAdapter_UpdateFile_Call) Return(repositoryContentResponse *github.RepositoryContentResponse, response *github.Response, err error) *MockRepositoriesAdapter_UpdateFile_Call {
+	_c.Call.Return(repositoryContentResponse, response, err)
+	return _c
+}
+
+func (_c *MockRepositoriesAdapter_UpdateFile_Call) RunAndReturn(run func(ctx context.Context, owner string, repo string, path string, opts *github.RepositoryContentFileOptions) (*github.RepositoryContentResponse, *github.Response, error)) *MockRepositoriesAdapter_UpdateFile_Call {
 	_c.Call.Return(run)
 	return _c
 }

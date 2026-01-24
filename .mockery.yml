@@ -18,7 +18,10 @@ packages:
       Client:
       RepositoriesAdapter:
       GitAdapter:
+      ReferencesAdapter:
+      PullRequestsAdapter:
   github.com/tracker-tv/github-policy-bots/internal/service:
     interfaces:
       RepositoryService:
       PolicyService:
+      RemediationService:

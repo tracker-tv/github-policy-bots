@@ -12,7 +12,7 @@ import (
 )
 
 type PolicyService interface {
-	Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyViolation, error)
+	Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyDeviation, error)
 }
 
 type policyService struct {
@@ -29,8 +29,8 @@ func NewPolicyService(workflows []models.PolicyWorkflow, gh github.Client) Polic
 	}
 }
 
-func (s *policyService) Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyViolation, error) {
-	var violations []models.PolicyViolation
+func (s *policyService) Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyDeviation, error) {
+	var deviations []models.PolicyDeviation
 
 	for _, policy := range s.workflows {
 		matched, err := s.matchesPolicy(repoFiles, policy.MatchFile)
@@ -47,7 +47,7 @@ func (s *policyService) Ensure(ctx context.Context, repo models.Repository, repo
 		content, _, resp, err := s.gh.GetContentsRaw(ctx, repo.Name, targetPath)
 		if err != nil {
 			if resp != nil && resp.StatusCode == http.StatusNotFound {
-				violations = append(violations, models.PolicyViolation{
+				deviations = append(deviations, models.PolicyDeviation{
 					Repository:     repo,
 					Policy:         policy,
 					Action:         models.PolicyActionCreate,
@@ -70,8 +70,9 @@ func (s *policyService) Ensure(ctx context.Context, repo models.Repository, repo
 			return nil, fmt.Errorf("fetching expected content for %s: %w", policy.Name, err)
 		}
 
-		if currentContent != expectedContent {
-			violations = append(violations, models.PolicyViolation{
+		wrappedExpectedContent := wrapContent(expectedContent, policy.Name)
+		if currentContent != wrappedExpectedContent {
+			deviations = append(deviations, models.PolicyDeviation{
 				Repository:     repo,
 				Policy:         policy,
 				Action:         models.PolicyActionUpdate,
@@ -82,7 +83,7 @@ func (s *policyService) Ensure(ctx context.Context, repo models.Repository, repo
 		}
 	}
 
-	return violations, nil
+	return deviations, nil
 }
 
 func (s *policyService) matchesPolicy(files []string, pattern string) (bool, error) {
