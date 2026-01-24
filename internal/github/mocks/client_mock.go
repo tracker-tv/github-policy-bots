@@ -38,6 +38,402 @@ func (_m *MockClient) EXPECT() *MockClient_Expecter {
 	return &MockClient_Expecter{mock: &_m.Mock}
 }
 
+// CreateBranch provides a mock function for the type MockClient
+func (_mock *MockClient) CreateBranch(ctx context.Context, repo string, branchName string, baseSHA string) error {
+	ret := _mock.Called(ctx, repo, branchName, baseSHA)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateBranch")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = returnFunc(ctx, repo, branchName, baseSHA)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockClient_CreateBranch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateBranch'
+type MockClient_CreateBranch_Call struct {
+	*mock.Call
+}
+
+// CreateBranch is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - branchName string
+//   - baseSHA string
+func (_e *MockClient_Expecter) CreateBranch(ctx interface{}, repo interface{}, branchName interface{}, baseSHA interface{}) *MockClient_CreateBranch_Call {
+	return &MockClient_CreateBranch_Call{Call: _e.mock.On("CreateBranch", ctx, repo, branchName, baseSHA)}
+}
+
+func (_c *MockClient_CreateBranch_Call) Run(run func(ctx context.Context, repo string, branchName string, baseSHA string)) *MockClient_CreateBranch_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_CreateBranch_Call) Return(err error) *MockClient_CreateBranch_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockClient_CreateBranch_Call) RunAndReturn(run func(ctx context.Context, repo string, branchName string, baseSHA string) error) *MockClient_CreateBranch_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreateOrUpdateFile provides a mock function for the type MockClient
+func (_mock *MockClient) CreateOrUpdateFile(ctx context.Context, repo string, path string, branch string, message string, content string, fileSHA *string) error {
+	ret := _mock.Called(ctx, repo, path, branch, message, content, fileSHA)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateOrUpdateFile")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, string, string, *string) error); ok {
+		r0 = returnFunc(ctx, repo, path, branch, message, content, fileSHA)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockClient_CreateOrUpdateFile_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateOrUpdateFile'
+type MockClient_CreateOrUpdateFile_Call struct {
+	*mock.Call
+}
+
+// CreateOrUpdateFile is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - path string
+//   - branch string
+//   - message string
+//   - content string
+//   - fileSHA *string
+func (_e *MockClient_Expecter) CreateOrUpdateFile(ctx interface{}, repo interface{}, path interface{}, branch interface{}, message interface{}, content interface{}, fileSHA interface{}) *MockClient_CreateOrUpdateFile_Call {
+	return &MockClient_CreateOrUpdateFile_Call{Call: _e.mock.On("CreateOrUpdateFile", ctx, repo, path, branch, message, content, fileSHA)}
+}
+
+func (_c *MockClient_CreateOrUpdateFile_Call) Run(run func(ctx context.Context, repo string, path string, branch string, message string, content string, fileSHA *string)) *MockClient_CreateOrUpdateFile_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
+		var arg6 *string
+		if args[6] != nil {
+			arg6 = args[6].(*string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+			arg6,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_CreateOrUpdateFile_Call) Return(err error) *MockClient_CreateOrUpdateFile_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockClient_CreateOrUpdateFile_Call) RunAndReturn(run func(ctx context.Context, repo string, path string, branch string, message string, content string, fileSHA *string) error) *MockClient_CreateOrUpdateFile_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// CreatePullRequest provides a mock function for the type MockClient
+func (_mock *MockClient) CreatePullRequest(ctx context.Context, repo string, title string, body string, head string, base string) (*github.PullRequest, error) {
+	ret := _mock.Called(ctx, repo, title, body, head, base)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreatePullRequest")
+	}
+
+	var r0 *github.PullRequest
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, string, string) (*github.PullRequest, error)); ok {
+		return returnFunc(ctx, repo, title, body, head, base)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string, string, string) *github.PullRequest); ok {
+		r0 = returnFunc(ctx, repo, title, body, head, base)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.PullRequest)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string, string, string) error); ok {
+		r1 = returnFunc(ctx, repo, title, body, head, base)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockClient_CreatePullRequest_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreatePullRequest'
+type MockClient_CreatePullRequest_Call struct {
+	*mock.Call
+}
+
+// CreatePullRequest is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - title string
+//   - body string
+//   - head string
+//   - base string
+func (_e *MockClient_Expecter) CreatePullRequest(ctx interface{}, repo interface{}, title interface{}, body interface{}, head interface{}, base interface{}) *MockClient_CreatePullRequest_Call {
+	return &MockClient_CreatePullRequest_Call{Call: _e.mock.On("CreatePullRequest", ctx, repo, title, body, head, base)}
+}
+
+func (_c *MockClient_CreatePullRequest_Call) Run(run func(ctx context.Context, repo string, title string, body string, head string, base string)) *MockClient_CreatePullRequest_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		var arg4 string
+		if args[4] != nil {
+			arg4 = args[4].(string)
+		}
+		var arg5 string
+		if args[5] != nil {
+			arg5 = args[5].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+			arg4,
+			arg5,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_CreatePullRequest_Call) Return(pullRequest *github.PullRequest, err error) *MockClient_CreatePullRequest_Call {
+	_c.Call.Return(pullRequest, err)
+	return _c
+}
+
+func (_c *MockClient_CreatePullRequest_Call) RunAndReturn(run func(ctx context.Context, repo string, title string, body string, head string, base string) (*github.PullRequest, error)) *MockClient_CreatePullRequest_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// FindPullRequestByBranch provides a mock function for the type MockClient
+func (_mock *MockClient) FindPullRequestByBranch(ctx context.Context, repo string, branchName string) (*github.PullRequest, error) {
+	ret := _mock.Called(ctx, repo, branchName)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindPullRequestByBranch")
+	}
+
+	var r0 *github.PullRequest
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*github.PullRequest, error)); ok {
+		return returnFunc(ctx, repo, branchName)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *github.PullRequest); ok {
+		r0 = returnFunc(ctx, repo, branchName)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.PullRequest)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, repo, branchName)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockClient_FindPullRequestByBranch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'FindPullRequestByBranch'
+type MockClient_FindPullRequestByBranch_Call struct {
+	*mock.Call
+}
+
+// FindPullRequestByBranch is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - branchName string
+func (_e *MockClient_Expecter) FindPullRequestByBranch(ctx interface{}, repo interface{}, branchName interface{}) *MockClient_FindPullRequestByBranch_Call {
+	return &MockClient_FindPullRequestByBranch_Call{Call: _e.mock.On("FindPullRequestByBranch", ctx, repo, branchName)}
+}
+
+func (_c *MockClient_FindPullRequestByBranch_Call) Run(run func(ctx context.Context, repo string, branchName string)) *MockClient_FindPullRequestByBranch_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_FindPullRequestByBranch_Call) Return(pullRequest *github.PullRequest, err error) *MockClient_FindPullRequestByBranch_Call {
+	_c.Call.Return(pullRequest, err)
+	return _c
+}
+
+func (_c *MockClient_FindPullRequestByBranch_Call) RunAndReturn(run func(ctx context.Context, repo string, branchName string) (*github.PullRequest, error)) *MockClient_FindPullRequestByBranch_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetBranch provides a mock function for the type MockClient
+func (_mock *MockClient) GetBranch(ctx context.Context, repo string, branch string) (*github.Reference, error) {
+	ret := _mock.Called(ctx, repo, branch)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetBranch")
+	}
+
+	var r0 *github.Reference
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) (*github.Reference, error)); ok {
+		return returnFunc(ctx, repo, branch)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string) *github.Reference); ok {
+		r0 = returnFunc(ctx, repo, branch)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*github.Reference)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = returnFunc(ctx, repo, branch)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockClient_GetBranch_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetBranch'
+type MockClient_GetBranch_Call struct {
+	*mock.Call
+}
+
+// GetBranch is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - branch string
+func (_e *MockClient_Expecter) GetBranch(ctx interface{}, repo interface{}, branch interface{}) *MockClient_GetBranch_Call {
+	return &MockClient_GetBranch_Call{Call: _e.mock.On("GetBranch", ctx, repo, branch)}
+}
+
+func (_c *MockClient_GetBranch_Call) Run(run func(ctx context.Context, repo string, branch string)) *MockClient_GetBranch_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_GetBranch_Call) Return(reference *github.Reference, err error) *MockClient_GetBranch_Call {
+	_c.Call.Return(reference, err)
+	return _c
+}
+
+func (_c *MockClient_GetBranch_Call) RunAndReturn(run func(ctx context.Context, repo string, branch string) (*github.Reference, error)) *MockClient_GetBranch_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetContentsRaw provides a mock function for the type MockClient
 func (_mock *MockClient) GetContentsRaw(ctx context.Context, repo string, path string) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error) {
 	ret := _mock.Called(ctx, repo, path)
@@ -124,6 +520,90 @@ func (_c *MockClient_GetContentsRaw_Call) Return(repositoryContent *github.Repos
 }
 
 func (_c *MockClient_GetContentsRaw_Call) RunAndReturn(run func(ctx context.Context, repo string, path string) (*github.RepositoryContent, []*github.RepositoryContent, *github.Response, error)) *MockClient_GetContentsRaw_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetFileContent provides a mock function for the type MockClient
+func (_mock *MockClient) GetFileContent(ctx context.Context, repo string, path string, ref string) (string, string, error) {
+	ret := _mock.Called(ctx, repo, path, ref)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetFileContent")
+	}
+
+	var r0 string
+	var r1 string
+	var r2 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) (string, string, error)); ok {
+		return returnFunc(ctx, repo, path, ref)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, string, string) string); ok {
+		r0 = returnFunc(ctx, repo, path, ref)
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, string, string) string); ok {
+		r1 = returnFunc(ctx, repo, path, ref)
+	} else {
+		r1 = ret.Get(1).(string)
+	}
+	if returnFunc, ok := ret.Get(2).(func(context.Context, string, string, string) error); ok {
+		r2 = returnFunc(ctx, repo, path, ref)
+	} else {
+		r2 = ret.Error(2)
+	}
+	return r0, r1, r2
+}
+
+// MockClient_GetFileContent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetFileContent'
+type MockClient_GetFileContent_Call struct {
+	*mock.Call
+}
+
+// GetFileContent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - path string
+//   - ref string
+func (_e *MockClient_Expecter) GetFileContent(ctx interface{}, repo interface{}, path interface{}, ref interface{}) *MockClient_GetFileContent_Call {
+	return &MockClient_GetFileContent_Call{Call: _e.mock.On("GetFileContent", ctx, repo, path, ref)}
+}
+
+func (_c *MockClient_GetFileContent_Call) Run(run func(ctx context.Context, repo string, path string, ref string)) *MockClient_GetFileContent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 string
+		if args[2] != nil {
+			arg2 = args[2].(string)
+		}
+		var arg3 string
+		if args[3] != nil {
+			arg3 = args[3].(string)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+			arg3,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_GetFileContent_Call) Return(content string, sha string, err error) *MockClient_GetFileContent_Call {
+	_c.Call.Return(content, sha, err)
+	return _c
+}
+
+func (_c *MockClient_GetFileContent_Call) RunAndReturn(run func(ctx context.Context, repo string, path string, ref string) (string, string, error)) *MockClient_GetFileContent_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -274,6 +754,80 @@ func (_c *MockClient_ListAllRepos_Call) Return(repositorys []*github.Repository,
 }
 
 func (_c *MockClient_ListAllRepos_Call) RunAndReturn(run func(ctx context.Context) ([]*github.Repository, error)) *MockClient_ListAllRepos_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListPullRequests provides a mock function for the type MockClient
+func (_mock *MockClient) ListPullRequests(ctx context.Context, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, error) {
+	ret := _mock.Called(ctx, repo, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListPullRequests")
+	}
+
+	var r0 []*github.PullRequest
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *github.PullRequestListOptions) ([]*github.PullRequest, error)); ok {
+		return returnFunc(ctx, repo, opts)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string, *github.PullRequestListOptions) []*github.PullRequest); ok {
+		r0 = returnFunc(ctx, repo, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*github.PullRequest)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string, *github.PullRequestListOptions) error); ok {
+		r1 = returnFunc(ctx, repo, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockClient_ListPullRequests_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListPullRequests'
+type MockClient_ListPullRequests_Call struct {
+	*mock.Call
+}
+
+// ListPullRequests is a helper method to define mock.On call
+//   - ctx context.Context
+//   - repo string
+//   - opts *github.PullRequestListOptions
+func (_e *MockClient_Expecter) ListPullRequests(ctx interface{}, repo interface{}, opts interface{}) *MockClient_ListPullRequests_Call {
+	return &MockClient_ListPullRequests_Call{Call: _e.mock.On("ListPullRequests", ctx, repo, opts)}
+}
+
+func (_c *MockClient_ListPullRequests_Call) Run(run func(ctx context.Context, repo string, opts *github.PullRequestListOptions)) *MockClient_ListPullRequests_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		var arg2 *github.PullRequestListOptions
+		if args[2] != nil {
+			arg2 = args[2].(*github.PullRequestListOptions)
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockClient_ListPullRequests_Call) Return(pullRequests []*github.PullRequest, err error) *MockClient_ListPullRequests_Call {
+	_c.Call.Return(pullRequests, err)
+	return _c
+}
+
+func (_c *MockClient_ListPullRequests_Call) RunAndReturn(run func(ctx context.Context, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, error)) *MockClient_ListPullRequests_Call {
 	_c.Call.Return(run)
 	return _c
 }

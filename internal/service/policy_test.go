@@ -116,10 +116,10 @@ func TestEnsure_MatchWithUpToDateWorkflow(t *testing.T) {
 	ctx := context.Background()
 	mockClient := githubMocks.NewMockClient(t)
 
-	expectedContent := "current workflow content"
+	rawContent := "current workflow content"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(expectedContent))
+		w.Write([]byte(rawContent))
 	}))
 	defer server.Close()
 
@@ -130,7 +130,9 @@ func TestEnsure_MatchWithUpToDateWorkflow(t *testing.T) {
 	repo := models.Repository{Name: "my-repo", FullName: "org/my-repo"}
 	repoFiles := []string{"Dockerfile"}
 
-	encodedContent := base64.StdEncoding.EncodeToString([]byte(expectedContent))
+	// The current content in the repo should be the wrapped version (as created by the bot)
+	wrappedContent := wrapContent(rawContent, "dockerfile")
+	encodedContent := base64.StdEncoding.EncodeToString([]byte(wrappedContent))
 	content := &gh.RepositoryContent{
 		Content:  gh.Ptr(encodedContent),
 		Encoding: gh.Ptr("base64"),

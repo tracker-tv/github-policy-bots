@@ -39,23 +39,23 @@ func (_m *MockPolicyService) EXPECT() *MockPolicyService_Expecter {
 }
 
 // Ensure provides a mock function for the type MockPolicyService
-func (_mock *MockPolicyService) Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyViolation, error) {
+func (_mock *MockPolicyService) Ensure(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyDeviation, error) {
 	ret := _mock.Called(ctx, repo, repoFiles)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Ensure")
 	}
 
-	var r0 []models.PolicyViolation
+	var r0 []models.PolicyDeviation
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.Repository, []string) ([]models.PolicyViolation, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.Repository, []string) ([]models.PolicyDeviation, error)); ok {
 		return returnFunc(ctx, repo, repoFiles)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, models.Repository, []string) []models.PolicyViolation); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, models.Repository, []string) []models.PolicyDeviation); ok {
 		r0 = returnFunc(ctx, repo, repoFiles)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]models.PolicyViolation)
+			r0 = ret.Get(0).([]models.PolicyDeviation)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, models.Repository, []string) error); ok {
@@ -102,12 +102,12 @@ func (_c *MockPolicyService_Ensure_Call) Run(run func(ctx context.Context, repo 
 	return _c
 }
 
-func (_c *MockPolicyService_Ensure_Call) Return(policyViolations []models.PolicyViolation, err error) *MockPolicyService_Ensure_Call {
-	_c.Call.Return(policyViolations, err)
+func (_c *MockPolicyService_Ensure_Call) Return(policyDrifts []models.PolicyDeviation, err error) *MockPolicyService_Ensure_Call {
+	_c.Call.Return(policyDrifts, err)
 	return _c
 }
 
-func (_c *MockPolicyService_Ensure_Call) RunAndReturn(run func(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyViolation, error)) *MockPolicyService_Ensure_Call {
+func (_c *MockPolicyService_Ensure_Call) RunAndReturn(run func(ctx context.Context, repo models.Repository, repoFiles []string) ([]models.PolicyDeviation, error)) *MockPolicyService_Ensure_Call {
 	_c.Call.Return(run)
 	return _c
 }

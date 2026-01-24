@@ -13,7 +13,7 @@ type PolicyWorkflow struct {
 	Source    string `json:"source"`
 }
 
-type PolicyViolation struct {
+type PolicyDeviation struct {
 	Repository     Repository
 	Policy         PolicyWorkflow
 	Action         PolicyAction

@@ -38,15 +38,20 @@ func main() {
 
 	repoSvc := service.NewRepositoriesService(ghClient)
 	policySvc := service.NewPolicyService(workflows, ghClient)
+	remediationSvc := service.NewRemediationService(ghClient)
 
-	bot := orchestrator.NewGithubActionsBot(repoSvc, policySvc)
+	bot := orchestrator.NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
 
-	violations, err := bot.Run(context.Background())
+	results, err := bot.Run(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, v := range violations {
-		fmt.Printf("Violation: %s in %s - action: %s\n", v.Policy.Name, v.Repository.FullName, v.Action)
+	for _, r := range results {
+		if r.Error != nil {
+			fmt.Printf("Error: %s in %s - %v\n", r.Drift.Policy.Name, r.Drift.Repository.FullName, r.Error)
+		} else {
+			fmt.Printf("Remediation: %s in %s - %s (%s)\n", r.Drift.Policy.Name, r.Drift.Repository.FullName, r.Action, r.PRURL)
+		}
 	}
 }

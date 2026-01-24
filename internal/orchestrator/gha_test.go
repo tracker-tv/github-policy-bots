@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/tracker-tv/github-policy-bots/internal/service"
 	serviceMocks "github.com/tracker-tv/github-policy-bots/internal/service/mocks"
 	"github.com/tracker-tv/github-policy-bots/models"
 )
@@ -14,22 +15,31 @@ import (
 func TestNewGithubActionsBot(t *testing.T) {
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
 
 	assert.NotNil(t, bot)
 	assert.Equal(t, repoSvc, bot.repos)
 	assert.Equal(t, policySvc, bot.policy)
+	assert.Equal(t, remediationSvc, bot.remediation)
 }
 
 func TestRun_Success(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repos := []models.Repository{
 		{Name: "repo1", FullName: "org/repo1", Archived: false},
 		{Name: "repo2", FullName: "org/repo2", Archived: false},
+	}
+
+	drift := models.PolicyDeviation{
+		Repository: repos[0],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
 	}
 
 	repoSvc.
@@ -54,29 +64,39 @@ func TestRun_Success(t *testing.T) {
 		EXPECT().
 		Ensure(mock.Anything, repos[0], []string{"Dockerfile", "main.go"}).
 		Once().
-		Return([]models.PolicyViolation{
-			{Repository: repos[0], Policy: models.PolicyWorkflow{Name: "dockerfile"}, Action: models.PolicyActionCreate},
-		}, nil)
+		Return([]models.PolicyDeviation{drift}, nil)
 
 	policySvc.
 		EXPECT().
 		Ensure(mock.Anything, repos[1], []string{"README.md"}).
 		Once().
-		Return([]models.PolicyViolation{}, nil)
+		Return([]models.PolicyDeviation{}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift).
+		Once().
+		Return(&service.RemediationResult{
+			Drift:  drift,
+			Action: "created",
+			PRURL:  "https://github.com/org/repo1/pull/1",
+		}, nil)
+
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Len(t, violations, 1)
-	assert.Equal(t, "dockerfile", violations[0].Policy.Name)
-	assert.Equal(t, "repo1", violations[0].Repository.Name)
+	assert.Len(t, results, 1)
+	assert.Equal(t, "dockerfile", results[0].Drift.Policy.Name)
+	assert.Equal(t, "repo1", results[0].Drift.Repository.Name)
+	assert.Equal(t, "created", results[0].Action)
 }
 
 func TestRun_SkipsArchivedRepos(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repos := []models.Repository{
 		{Name: "active-repo", FullName: "org/active-repo", Archived: false},
@@ -99,19 +119,20 @@ func TestRun_SkipsArchivedRepos(t *testing.T) {
 		EXPECT().
 		Ensure(mock.Anything, repos[0], []string{"main.go"}).
 		Once().
-		Return([]models.PolicyViolation{}, nil)
+		Return([]models.PolicyDeviation{}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Empty(t, violations)
+	assert.Empty(t, results)
 }
 
 func TestRun_ListAllError(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repoSvc.
 		EXPECT().
@@ -119,11 +140,11 @@ func TestRun_ListAllError(t *testing.T) {
 		Once().
 		Return(nil, errors.New("API error"))
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.Error(t, err)
-	assert.Nil(t, violations)
+	assert.Nil(t, results)
 	assert.Contains(t, err.Error(), "API error")
 }
 
@@ -131,10 +152,17 @@ func TestRun_ListFilesErrorContinues(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repos := []models.Repository{
 		{Name: "repo1", FullName: "org/repo1", Archived: false},
 		{Name: "repo2", FullName: "org/repo2", Archived: false},
+	}
+
+	drift := models.PolicyDeviation{
+		Repository: repos[1],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
 	}
 
 	repoSvc.
@@ -159,26 +187,41 @@ func TestRun_ListFilesErrorContinues(t *testing.T) {
 		EXPECT().
 		Ensure(mock.Anything, repos[1], []string{"Dockerfile"}).
 		Once().
-		Return([]models.PolicyViolation{
-			{Repository: repos[1], Policy: models.PolicyWorkflow{Name: "dockerfile"}, Action: models.PolicyActionCreate},
+		Return([]models.PolicyDeviation{drift}, nil)
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift).
+		Once().
+		Return(&service.RemediationResult{
+			Drift:  drift,
+			Action: "created",
+			PRURL:  "https://github.com/org/repo2/pull/1",
 		}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Len(t, violations, 1)
-	assert.Equal(t, "repo2", violations[0].Repository.Name)
+	assert.Len(t, results, 1)
+	assert.Equal(t, "repo2", results[0].Drift.Repository.Name)
 }
 
 func TestRun_EnsureErrorContinues(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repos := []models.Repository{
 		{Name: "repo1", FullName: "org/repo1", Archived: false},
 		{Name: "repo2", FullName: "org/repo2", Archived: false},
+	}
+
+	drift := models.PolicyDeviation{
+		Repository: repos[1],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
 	}
 
 	repoSvc.
@@ -209,22 +252,31 @@ func TestRun_EnsureErrorContinues(t *testing.T) {
 		EXPECT().
 		Ensure(mock.Anything, repos[1], []string{"Dockerfile"}).
 		Once().
-		Return([]models.PolicyViolation{
-			{Repository: repos[1], Policy: models.PolicyWorkflow{Name: "dockerfile"}, Action: models.PolicyActionCreate},
+		Return([]models.PolicyDeviation{drift}, nil)
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift).
+		Once().
+		Return(&service.RemediationResult{
+			Drift:  drift,
+			Action: "created",
+			PRURL:  "https://github.com/org/repo2/pull/1",
 		}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Len(t, violations, 1)
-	assert.Equal(t, "repo2", violations[0].Repository.Name)
+	assert.Len(t, results, 1)
+	assert.Equal(t, "repo2", results[0].Drift.Repository.Name)
 }
 
 func TestRun_EmptyRepos(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repoSvc.
 		EXPECT().
@@ -232,21 +284,38 @@ func TestRun_EmptyRepos(t *testing.T) {
 		Once().
 		Return([]models.Repository{}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Empty(t, violations)
+	assert.Empty(t, results)
 }
 
-func TestRun_MultipleViolationsAcrossRepos(t *testing.T) {
+func TestRun_MultipleResultsAcrossRepos(t *testing.T) {
 	ctx := context.Background()
 	repoSvc := serviceMocks.NewMockRepositoryService(t)
 	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
 
 	repos := []models.Repository{
 		{Name: "repo1", FullName: "org/repo1", Archived: false},
 		{Name: "repo2", FullName: "org/repo2", Archived: false},
+	}
+
+	drift1 := models.PolicyDeviation{
+		Repository: repos[0],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
+	}
+	drift2 := models.PolicyDeviation{
+		Repository: repos[0],
+		Policy:     models.PolicyWorkflow{Name: "go-lint"},
+		Action:     models.PolicyActionUpdate,
+	}
+	drift3 := models.PolicyDeviation{
+		Repository: repos[1],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
 	}
 
 	repoSvc.
@@ -271,22 +340,96 @@ func TestRun_MultipleViolationsAcrossRepos(t *testing.T) {
 		EXPECT().
 		Ensure(mock.Anything, repos[0], []string{"Dockerfile", "main.go"}).
 		Once().
-		Return([]models.PolicyViolation{
-			{Repository: repos[0], Policy: models.PolicyWorkflow{Name: "dockerfile"}, Action: models.PolicyActionCreate},
-			{Repository: repos[0], Policy: models.PolicyWorkflow{Name: "go-lint"}, Action: models.PolicyActionUpdate},
-		}, nil)
+		Return([]models.PolicyDeviation{drift1, drift2}, nil)
 
 	policySvc.
 		EXPECT().
 		Ensure(mock.Anything, repos[1], []string{"Dockerfile"}).
 		Once().
-		Return([]models.PolicyViolation{
-			{Repository: repos[1], Policy: models.PolicyWorkflow{Name: "dockerfile"}, Action: models.PolicyActionCreate},
-		}, nil)
+		Return([]models.PolicyDeviation{drift3}, nil)
 
-	bot := NewGithubActionsBot(repoSvc, policySvc)
-	violations, err := bot.Run(ctx)
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift1).
+		Once().
+		Return(&service.RemediationResult{Drift: drift1, Action: "created", PRURL: "url1"}, nil)
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift2).
+		Once().
+		Return(&service.RemediationResult{Drift: drift2, Action: "updated", PRURL: "url2"}, nil)
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift3).
+		Once().
+		Return(&service.RemediationResult{Drift: drift3, Action: "created", PRURL: "url3"}, nil)
+
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
 
 	assert.NoError(t, err)
-	assert.Len(t, violations, 3)
+	assert.Len(t, results, 3)
+}
+
+func TestRun_RemediationErrorContinues(t *testing.T) {
+	ctx := context.Background()
+	repoSvc := serviceMocks.NewMockRepositoryService(t)
+	policySvc := serviceMocks.NewMockPolicyService(t)
+	remediationSvc := serviceMocks.NewMockRemediationService(t)
+
+	repos := []models.Repository{
+		{Name: "repo1", FullName: "org/repo1", Archived: false},
+	}
+
+	drift1 := models.PolicyDeviation{
+		Repository: repos[0],
+		Policy:     models.PolicyWorkflow{Name: "dockerfile"},
+		Action:     models.PolicyActionCreate,
+	}
+	drift2 := models.PolicyDeviation{
+		Repository: repos[0],
+		Policy:     models.PolicyWorkflow{Name: "go-lint"},
+		Action:     models.PolicyActionUpdate,
+	}
+
+	repoSvc.
+		EXPECT().
+		ListAll(mock.Anything).
+		Once().
+		Return(repos, nil)
+
+	repoSvc.
+		EXPECT().
+		ListFiles(mock.Anything, "repo1").
+		Once().
+		Return([]string{"Dockerfile", "main.go"}, nil)
+
+	policySvc.
+		EXPECT().
+		Ensure(mock.Anything, repos[0], []string{"Dockerfile", "main.go"}).
+		Once().
+		Return([]models.PolicyDeviation{drift1, drift2}, nil)
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift1).
+		Once().
+		Return(nil, errors.New("PR creation failed"))
+
+	remediationSvc.
+		EXPECT().
+		Remediate(mock.Anything, drift2).
+		Once().
+		Return(&service.RemediationResult{Drift: drift2, Action: "created", PRURL: "url2"}, nil)
+
+	bot := NewGithubActionsBot(repoSvc, policySvc, remediationSvc)
+	results, err := bot.Run(ctx)
+
+	assert.NoError(t, err)
+	assert.Len(t, results, 2)
+	assert.NotNil(t, results[0].Error)
+	assert.Nil(t, results[1].Error)
+	assert.Equal(t, "created", results[1].Action)
 }
